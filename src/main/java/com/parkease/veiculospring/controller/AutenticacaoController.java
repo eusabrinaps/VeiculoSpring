@@ -1,6 +1,7 @@
 package com.parkease.veiculospring.controller;
 
 import com.parkease.veiculospring.usuario.DadosAutenticacao;
+import com.parkease.veiculospring.usuario.UsuarioRepository;
 import com.parkease.veiculospring.util.DadosTokenJWT;
 import com.parkease.veiculospring.usuario.Usuario;
 import com.parkease.veiculospring.util.TokenService;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +25,19 @@ public class AutenticacaoController {
 
     @Autowired
     private TokenService tokenService;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @PostMapping("/registro")
+    public ResponseEntity<Void> registrar(@RequestBody @Valid DadosAutenticacao dados) {
+        var senhaCriptografada = passwordEncoder.encode(dados.senha());
+        usuarioRepository.save(new Usuario(dados.login(), senhaCriptografada));
+        return ResponseEntity.ok().build();
+    }
 
     @PostMapping
     public ResponseEntity<DadosTokenJWT> efetuarLogin(@RequestBody @Valid DadosAutenticacao dados) {
